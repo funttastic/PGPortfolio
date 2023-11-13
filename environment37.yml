@@ -2,6 +2,7 @@ name: pgportfolio37
 channels:
   - defaults
   - anaconda
+  - conda-forge
 dependencies:
   - _libgcc_mutex=0.1=main
   - _tflow_select=2.1.0=gpu
