@@ -28,6 +28,7 @@ PUBLIC_COMMANDS = {
     'returnLoanOrders': 'loanOrders'
 }
 
+
 class Poloniex:
     def __init__(self, APIKey='', Secret=''):
         self.APIKey = APIKey.encode()
@@ -73,6 +74,7 @@ class Poloniex:
     def marketTradeHist(self, pair):
         return self.api('returnTradeHistory',{'currencyPair':pair})
 
-# Exemplo de uso
-# poloniex = Poloniex()
-# print(poloniex.marketTicker())
+
+if __name__ == "__main__":
+    poloniex = Poloniex()
+    print(poloniex.marketVolume())
