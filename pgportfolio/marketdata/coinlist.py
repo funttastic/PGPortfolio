@@ -12,35 +12,30 @@ from pgportfolio.constants import *
 class CoinList(object):
     def __init__(self, end, volume_average_days=1, volume_forward=0):
         self._polo = Poloniex()
-        # connect the internet to accees volumes
-        vol = self._polo.marketVolume()
-        ticker = self._polo.marketTicker()
+        market_data = self._polo.marketTicker()  # Assumindo que marketVolume retorna estrutura semelhante
+
         pairs = []
         coins = []
         volumes = []
         prices = []
 
-        logging.info("select coin online from %s to %s" % (datetime.fromtimestamp(end-(DAY*volume_average_days)-
-                                                                                  volume_forward).
-                                                           strftime('%Y-%m-%d %H:%M'),
-                                                           datetime.fromtimestamp(end-volume_forward).
-                                                           strftime('%Y-%m-%d %H:%M')))
-        for k, v in vol.items():
-            if k.startswith("BTC_") or k.endswith("_BTC"):
-                pairs.append(k)
-                for c, val in v.items():
-                    if c != 'BTC':
-                        if k.endswith('_BTC'):
-                            coins.append('reversed_' + c)
-                            prices.append(1.0 / float(ticker[k]['last']))
-                        else:
-                            coins.append(c)
-                            prices.append(float(ticker[k]['last']))
-                    else:
-                        volumes.append(self.__get_total_volume(pair=k, global_end=end,
-                                                               days=volume_average_days,
-                                                               forward=volume_forward))
-        self._df = pd.DataFrame({'coin': coins, 'pair': pairs, 'volume': volumes, 'price':prices})
+        logging.info("select coin online from %s to %s" % (datetime.fromtimestamp(end-(DAY*volume_average_days)-volume_forward).strftime('%Y-%m-%d %H:%M'), datetime.fromtimestamp(end-volume_forward).strftime('%Y-%m-%d %H:%M')))
+        for data in market_data:
+            pair = data["symbol"]
+            if 'BTC' in pair:
+                base, quote = pair.split('_')
+                if base == 'BTC':
+                    coin = quote
+                else:
+                    coin = 'reversed_' + base
+                    data['close'] = 1.0 / float(data['close'])
+
+                coins.append(coin)
+                pairs.append(pair)
+                prices.append(float(data['close']))
+                volumes.append(float(data['amount']))
+
+        self._df = pd.DataFrame({'coin': coins, 'pair': pairs, 'volume': volumes, 'price': prices})
         self._df = self._df.set_index('coin')
 
     @property
