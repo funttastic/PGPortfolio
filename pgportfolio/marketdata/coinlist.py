@@ -1,18 +1,21 @@
 from __future__ import absolute_import
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
+import logging
+from datetime import datetime
+
+import pandas as pd
+
+from pgportfolio.constants import *
 from pgportfolio.marketdata.poloniex import Poloniex
 from pgportfolio.tools.data import get_chart_until_success
-import pandas as pd
-from datetime import datetime
-import logging
-from pgportfolio.constants import *
 
 
 class CoinList(object):
     def __init__(self, end, volume_average_days=1, volume_forward=0):
         self._polo = Poloniex()
-        market_data = self._polo.marketTicker()  # Assumindo que marketVolume retorna estrutura semelhante
+        market_data = self._polo.marketVolume()
 
         pairs = []
         coins = []
