@@ -57,7 +57,8 @@ class Poloniex:
     def marketChart(self, symbol='BTC_USDT', period=None, start=None, end=None):
         interval = Interval.convert(period).value
 
-        return self.client.markets().get_candles(symbol, interval, start, end)
+        # return self.client.markets().get_candles(symbol, interval, start, end)
+        return self.client.markets().get_candles(symbol, interval, start)
 
     # def marketTradeHist(self, symbol):
     #     return self.client.markets().get_trades(symbol)
