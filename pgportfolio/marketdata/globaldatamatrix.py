@@ -200,28 +200,25 @@ class HistoryManager:
             self.__fill_part_data(bk_start, end, coin, cursor)
 
     def __fill_part_data(self, start, end, coin, cursor):
-        chart = self._coin_list.get_chart_until_success(
-            pair=self._coin_list.allActiveCoins.at[coin, 'pair'],
-            start=start,
-            end=end,
-            period=self.__storage_period)
-        logging.info("fill %s data from %s to %s"%(coin, datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M'),
-                                            datetime.fromtimestamp(end).strftime('%Y-%m-%d %H:%M')))
-        for c in chart:
-            if c["date"] > 0:
-                if c['weightedAverage'] == 0:
-                    weightedAverage = c['close']
-                else:
-                    weightedAverage = c['weightedAverage']
-
-                #NOTE here the USDT is in reversed order
-                if 'reversed_' in coin:
-                    cursor.execute('INSERT INTO History VALUES (?,?,?,?,?,?,?,?,?)',
-                        (c['date'],coin,1.0/c['low'],1.0/c['high'],1.0/c['open'],
-                        1.0/c['close'],c['quoteVolume'],c['volume'],
-                        1.0/weightedAverage))
-                else:
-                    cursor.execute('INSERT INTO History VALUES (?,?,?,?,?,?,?,?,?)',
-                                   (c['date'],coin,c['high'],c['low'],c['open'],
-                                    c['close'],c['volume'],c['quoteVolume'],
-                                    weightedAverage))
+            chart = self._coin_list.get_chart_until_success(
+                    pair=self._coin_list.allActiveCoins.at[coin, 'pair'],
+                    start=start,
+                    end=end,
+                    period=self.__storage_period)
+            logging.info("fill %s data from %s to %s" % (coin, datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M'),
+                                                                                                     datetime.fromtimestamp(end).strftime('%Y-%m-%d %H:%M')))
+            for c in chart:
+                    if c[9] > 0:  # ts
+                            weightedAverage = c[10] if c[10] != "0" else c[3]  # close
+    
+                            #NOTE here the USDT is in reversed order
+                            if 'reversed_' in coin:
+                                    cursor.execute('INSERT OR IGNORE INTO History VALUES (?,?,?,?,?,?,?,?,?)',
+                                                                 (c[9], coin, 1.0 / float(c[0]), 1.0 / float(c[1]), 1.0 / float(c[2]),
+                                                                    1.0 / float(c[3]), float(c[5]), float(c[4]),
+                                                                    1.0 / float(weightedAverage)))
+                            else:
+                                    cursor.execute('INSERT OR IGNORE INTO History VALUES (?,?,?,?,?,?,?,?,?)',
+                                                                 (c[9], coin, float(c[1]), float(c[0]), float(c[2]),
+                                                                    float(c[3]), float(c[4]), float(c[5]),
+                                                                    float(weightedAverage)))
