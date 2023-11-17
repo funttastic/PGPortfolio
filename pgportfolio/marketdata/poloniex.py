@@ -1,80 +1,73 @@
-import json
-import time
-import sys
-from datetime import datetime
+import enum
 
-if sys.version_info[0] == 3:
-    from urllib.request import Request, urlopen
-    from urllib.parse import urlencode
-else:
-    from urllib2 import Request, urlopen
-    from urllib import urlencode
+from pgportfolio.constants import FIVE_MINUTES, FIFTEEN_MINUTES, HALF_HOUR, HOUR, TWO_HOUR, FOUR_HOUR, DAY, YEAR
+from polosdk import RestClient
 
-minute = 60
-hour = minute * 60
-day = hour * 24
-week = day * 7
-month = day * 30
-year = day * 365
+class Interval(enum.Enum):
+    MINUTE_1="MINUTE_1"
+    MINUTE_5="MINUTE_5"
+    MINUTE_10="MINUTE_10"
+    MINUTE_15="MINUTE_15"
+    MINUTE_30="MINUTE_30"
+    HOUR_1="HOUR_1"
+    HOUR_2="HOUR_2"
+    HOUR_4="HOUR_4"
+    HOUR_6="HOUR_6"
+    HOUR_12="HOUR_12"
+    DAY_1="DAY_1"
+    DAY_3="DAY_3"
+    WEEK_1="WEEK_1"
+    MONTH_1="MONTH_1"
 
-# Novos Endpoints da API
-PUBLIC_COMMANDS = {
-    'returnTicker': 'markets/ticker24h',
-    'return24hVolume': 'markets/ticker24h',
-    'returnOrderBook': 'markets/{symbol}/orderBook',
-    'returnTradeHistory': 'markets/{symbol}/trades',
-    'returnChartData': 'markets/{symbol}/candles',
-    'returnCurrencies': 'currencies',
-    'returnLoanOrders': 'loanOrders'
-}
-
+    @staticmethod
+    def convert(input: int):
+        if input == FIVE_MINUTES:
+            return Interval.MINUTE_5
+        if input == FIFTEEN_MINUTES:
+            return Interval.MINUTE_15
+        if input == HALF_HOUR:
+            return Interval.MINUTE_30
+        if input == HOUR:
+            return Interval.HOUR_1
+        if input == TWO_HOUR:
+            return Interval.HOUR_2
+        if input == FOUR_HOUR:
+            return Interval.HOUR_4
+        if input == DAY:
+            return Interval.DAY_1
+        if input == YEAR:
+            raise ValueError(f"Invalid input {input} cannot be converted.")
 
 class Poloniex:
     def __init__(self, APIKey='', Secret=''):
-        self.APIKey = APIKey.encode()
-        self.Secret = Secret.encode()
-        self.timestamp_str = lambda timestamp=time.time(), format="%Y-%m-%d %H:%M:%S": datetime.fromtimestamp(timestamp).strftime(format)
-        self.str_timestamp = lambda datestr=self.timestamp_str(), format="%Y-%m-%d %H:%M:%S": int(time.mktime(time.strptime(datestr, format)))
-        self.float_roundPercent = lambda floatN, decimalP=2: str(round(float(floatN) * 100, decimalP)) + "%"
+        self.client = RestClient()
 
-    def api(self, command, args={}):
-      base_url = 'https://api.poloniex.com/'
-      if command in PUBLIC_COMMANDS:
-          url = base_url + PUBLIC_COMMANDS[command]
-          if '{symbol}' in url:
-              url = url.format(symbol=args.get('currencyPair'))
+    # def marketTicker(self, symbol='BTC_USDT'):
+    #     return self.client.markets().get_ticker24h(symbol)
 
-          headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-          print(url + '?' + urlencode(args))
-          req = Request(url + '?' + urlencode(args), headers=headers)
+    def marketVolume(self):
+        return self.client.markets().get_ticker24h_all()
 
-          ret = urlopen(req)
-          return json.loads(ret.read().decode(encoding='UTF-8'))
-      else:
-          return False
+    def marketStatus(self):
+        return self.client.get_currencies(multichain=True)
 
-    def marketTicker(self, x=0):
-        return self.api('returnTicker')
+    # def marketOrders(self, symbol='BTC_USDT'):
+    #     return self.client.markets().get_orderbook(symbol)
 
-    def marketVolume(self, x=0):
-        return self.api('return24hVolume')
+    def marketChart(self, symbol='BTC_USDT', period=None, start=None, end=None):
+        interval = Interval.convert(period).value
 
-    def marketStatus(self, x=0):
-        return self.api('returnCurrencies')
+        return self.client.markets().get_candles(symbol, interval, start, end)
 
-    def marketLoans(self, coin):
-        return self.api('returnLoanOrders',{'currency':coin})
-
-    def marketOrders(self, pair='all', depth=10):
-        return self.api('returnOrderBook', {'currencyPair':pair, 'depth':depth})
-
-    def marketChart(self, pair, period=day, start=time.time()-(week*1), end=time.time()):
-        return self.api('returnChartData', {'currencyPair':pair, 'period':period, 'start':start, 'end':end})
-
-    def marketTradeHist(self, pair):
-        return self.api('returnTradeHistory',{'currencyPair':pair})
+    # def marketTradeHist(self, symbol):
+    #     return self.client.markets().get_trades(symbol)
 
 
 if __name__ == "__main__":
     poloniex = Poloniex()
-    print(poloniex.marketVolume())
+    # print(poloniex.marketTicker())
+    # print(poloniex.marketVolume())
+    # print(poloniex.marketStatus())
+    # print(poloniex.marketOrders())
+    print(poloniex.marketChart(period=DAY))
+    # print(poloniex.marketTradeHist())
