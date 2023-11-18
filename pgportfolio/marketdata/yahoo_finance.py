@@ -11,7 +11,7 @@ yahoo_finance_pairs = [
 	"LTC-USD",
 	"XRP-USD",
 	"PPC-USD",
-	"USDT-USD",
+	# "USDT-USD",
 	"DOGE-USD",
 	"XPM-USD",
 	"NMC-USD",
