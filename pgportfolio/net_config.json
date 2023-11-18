@@ -19,12 +19,12 @@
   "input":{
     "window_size":31,
     "coin_number":11,
-    "global_period":1800,
+    "global_period":86400,
     "feature_number":3,
     "test_portion":0.08,
     "online":false,
-    "start_date":"2015/07/01",
-    "end_date":"2017/07/01",
+    "start_date":"2017/12/10",
+    "end_date":"2023/11/10",
     "volume_average_days":30
   },
 
