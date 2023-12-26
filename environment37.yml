@@ -20,7 +20,7 @@ dependencies:
   - certifi=2020.12.5
   - coverage=5.5
   - cudatoolkit=10.0.130
-  - cudnn=7.6.5=cuda10
+  - cudnn=7.6.5
   - cupti=10.0.130
   - cvxopt=1.2.0
   - cycler=0.10.0
