@@ -91,7 +91,9 @@ def byteify(input):
 
 
 def parse_time(time_string):
-    return time.mktime(datetime.strptime(time_string, "%Y/%m/%d").timetuple())
+    import calendar
+    return calendar.timegm(datetime.strptime(time_string, "%Y/%m/%d").timetuple())
+    # return time.mktime(datetime.strptime(time_string, "%Y/%m/%d").timetuple())
 
 
 def load_config(index=None):
